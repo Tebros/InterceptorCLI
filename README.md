@@ -1,82 +1,77 @@
-Interceptor
-===========
+# InterceptorCLI
 
-Note: Windows 8/8.1 is not supported.
+Note: Windows 8/8.1 is not supported. This project is designed for 64 bit architectures (x64).
 
-Interceptor is a wrapper for a Windows keyboard driver (Wrapping http://oblita.com/Interception). 
+InterceptorCLI is a command line interface for the parent project [Interceptor](https://github.com/jasonpang/Interceptor).  Interceptor is a wrapper library for a mouse and keyboard driver that provides a programming interface.
 
-Using the driver, Interceptor can simulate keystrokes and mouse clicks in...
+With the InterceptorCLI it is possible to control mouse clicks and keystrokes via commands in a terminal.
 
-  * Games that use DirectX, which don't normally accept keystrokes using SendInput()
-  * Protected areas of Windows like the Windows Logon Screen or UAC-dimmed screens
-  * And any app
-  
-Because the driver simulates keystrokes and mouse clicks, the target window must be active (i.e. you can't multitask on another window while sending keystrokes and mouse clicks).
+## Getting Started
 
-How to use
-===========
+### Manual Installation
 
-1. Download and build this project and reference its DLL in your project.
+1. Download the latest release [here](https://github.com/Tebros/InterceptorCLI/releases/latest) or build this project by your own. Move the .exe file into a directory of your choice.
 
-2. Download 'interception.dll', a separate library written by the driver author. Put it in the same directory as your executable. This is required.
+2. Download the driver (Interception.zip) from [here](https://github.com/oblitum/Interception/releases/tag/v1.0.1)
 
-3. Download and install 'install-interception.exe' from the author's webpage. Restart your computer after installation.
+3. Unzip [Interception.zip](https://github.com/oblitum/Interception/releases/download/v1.0.1/Interception.zip) to a temporary directory
 
-4. In your code, to load your driver, call (read the code comments below; you must set a filter mode to capture key press events or send key presses!):
+4. Navigate into "Interception/command line installer" and execute "install-interception.exe" as administrator to install the driver
 
-```
-Input input = new Input();
+5. Copy the file "Interception/library/x64/interception.dll" into the same directory, where the InterceptorCLI.exe is located (step 1)
 
-// Be sure to set your keyboard filter to be able to capture key presses and simulate key presses
-// KeyboardFilterMode.All captures all events; 'Down' only captures presses for non-special keys; 'Up' only captures releases for non-special keys; 'E0' and 'E1' capture presses/releases for special keys
-input.KeyboardFilterMode = KeyboardFilterMode.All;
-// You can set a MouseFilterMode as well, but you don't need to set a MouseFilterMode to simulate mouse clicks
+6. Restart your computer. If you want, you can now delete the unzipped directory and the Interception.zip
 
-// Finally, load the driver
-input.Load();
-```
+You can find the installation instruction for Interceptor [here](https://github.com/jasonpang/Interceptor/blob/master/README.md). The installation instruction for the driver can be found [here](https://github.com/oblitum/Interception/blob/v1.0.1/README.md).
 
-5. Do your stuff.
+### Usage and commands
 
-```
-input.MoveMouseTo(5, 5);  // Please note this doesn't use the driver to move the mouse; it uses System.Windows.Forms.Cursor.Position
-input.MoveMouseBy(25, 25); //  Same as above ^
-input.SendLeftClick();
+If you have followed the installation instruction correctly, you only need to execute the InterceptorCLI.exe and start typing.
 
-input.KeyDelay = 1; // See below for explanation; not necessary in non-game apps
-input.SendKeys(Keys.Enter);  // Presses the ENTER key down and then up (this constitutes a key press)
+The workflow is always the same. Firstly you type a command and execute it by pressing the enter key. The program handles the command with its arguments and prints a simple response:
 
-// Or you can do the same thing above using these two lines of code
-input.SendKeys(Keys.Enter, KeyState.Down);
-Thread.Sleep(1); // For use in games, be sure to sleep the thread so the game can capture all events. A lagging game cannot process input quickly, and you so you may have to adjust this to as much as 40 millisecond delay. Outside of a game, a delay of even 0 milliseconds can work (instant key presses).
-input.SendKeys(Keys.Enter, KeyState.Up);
+| Response | Description |
+|:--|:--|
+| OK | The command was successfully executed. |
+| TRUE | The answer of your question is "yes". |
+| FALSE | The answer of your question is "no" |
+| ERROR | An error occurred. The error is displayed in the terminal. |
+| EXIT | The program was successfully terminated. |
 
-input.SendText("hello, I am typing!");
+These are the available commands:
 
-/* All these following characters / numbers / symbols work */
-input.SendText("abcdefghijklmnopqrstuvwxyz");
-input.SendText("1234567890");
-input.SendText("!@#$%^&*()");
-input.SendText("[]\\;',./");
-input.SendText("{}|:\"<>?");
+| Command | Description |
+|:--|:--|
+| load | Load Interceptor |
+| setkeyboardfiltermode [mode] | Set the filter mode for the keyboard |
+| setmousefiltermode [mode] | Set the filter mode for the mouse |
+| setkeypressdelay [delay] | Milliseconds between a key press and release |
+| setclickdelay [delay] | Milliseconds between a mouse press and release |
+| setscrolldelay [delay] | Milliseconds between the scroll steps |
+| sendleftclick | Click at the current position with the left mouse button |
+| sendrightclick | Click at the current position with the right mouse button |
+| sendkey [key] [keystate] | The program was successfully terminated. |
+| movemouseto [x] [y] [useDriver] | Moves the mouse to the given point. `useDriver` indicates if the driver should be used for it. |
+| movemouseby [deltaX] [deltaY] [useDriver] | Moves the mouse, based on the current position. `useDriver` indicates if the driver should be used for it. |
+| isloaded | If Interceptor is loaded |
+| unload | Unload Interceptor |
+| exit | Unload Interceptor and terminate the program |
+
+These are the keyboard filter modes: `None`, `All`, `KeyDown`, `KeyUp`, `KeyE0`, `KeyE1`, `KeyTermsrvSetLED`, `KeyTermsrvShadow`, `KeyTermsrvVKPacket`
+
+These are the mouse filter modes: `None`, `All`, `LeftDown`, `LeftUp`, `RightDown`, `RightUp`, `MiddleDown`, `MiddleUp`, `LeftExtraDown`, `LeftExtraUp`, `RightExtraDown`, `RightExtraUp`, `MouseWheelVertical`, `MouseWheelHorizontal`, `MouseMove`
 
 
-// And finally
-input.Unload();
-```
+### Technical Details
 
-Notes:
+The InterceptorCLI listens for line breaks in the standard input stream. Responses are written to the standard output stream with a line break at the end. Errors are written to the standard error stream with a line break at the end.
+You can integrate the InterceptorCLI in your own software. 
 
-1. You may get a ```BadImageFormatException``` if you don't use the proper architecture (x86 or x64) for all your projects in the solution, including this project. So you may have to download the source of this project to rebuild it to the right architecture. This should be easy and the build process should have no errors.
+### Important Notes
 
-2. You MUST download the 'interception.dll' available from http://oblita.com/Interception.
-
-3. If you've done all the above (installed the Interception driver correctly, put interception.dll in your project folder) and you're still not able to send keystrokes:
- 
-The driver has a limitation in that it can't send keystrokes without receiving at least one keystroke. This is because the driver doesn't know which device id the keyboard is, so it has to wait to receive a keystroke to deduce the device id from your keystroke.
-
-In summary, before sending a keystroke, always physically press the keyboard once. Tap any key. Then you can send keystrokes. This doesn't apply to receiving keystrokes, because by receiving a keystroke, you have of course already pressed a key.
-
-4. MoveMouseTo() and MoveMouseBy() completely ignore the keyboard driver. It uses System.Windows.Forms.Position to set and get the cursor's position (which calls the standard Win32 API underneath for those respective functions).
-
-The reason for this is, while exploring the keyboard driver's mouse moving capabilities, I noticed it didn't move the cursor by pixel units, but rather it seemed to move the cursor by acceleration. This would continually produce inconsistent values when I wanted to move the cursor to a certain location. Because the Win32 cursor setting API isn't usually blocked by games and the like, I find simply calling these standard APIs to be sufficient without resorting to the driver. Please note that this only applies for setting cursor position. Intercepting the cursor still works okay. You can, for example, invert the x and y axes of the mouse using Interceptor.
+1. Only Windows is  supported. I have tested the program under Windows 10.
+2. Only the 64 bit architecture (x64) is supported. 
+3. To send keys you need to register your keyboard. To do this, just press any key on your keyboard **after** you have executed the `load` command.
+4. You firstly have to run the `load` command.
+5. Execute the `unload` or exit command if you wish to terminate the program. Please don't just kill the process!
+6. I recommend setting the keyboard filter mode to `All`
