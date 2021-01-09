@@ -10,7 +10,7 @@ With the InterceptorCLI it is possible to control mouse clicks and keystrokes vi
 
 ### Manual Installation
 
-1. Download the latest release [here](https://github.com/Tebros/InterceptorCLI/releases/latest) or build this project by your own. Move the .exe file into a directory of your choice.
+1. Download the latest release [here](https://github.com/Tebros/InterceptorCLI/releases/latest) or build this project by your own. Move the InterceptorCLI.exe and Interceptor.dll files into the same directory of your choice.
 
 2. Download the driver (Interception.zip) from [here](https://github.com/oblitum/Interception/releases/tag/v1.0.1)
 
