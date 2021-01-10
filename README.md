@@ -16,11 +16,13 @@ With the InterceptorCLI it is possible to control mouse clicks and keystrokes vi
 
 3. Unzip [Interception.zip](https://github.com/oblitum/Interception/releases/download/v1.0.1/Interception.zip) to a temporary directory
 
-4. Navigate into "Interception/command line installer" and execute "install-interception.exe" as administrator to install the driver
+4. Open a new terminal with administrator privileges (`WIN+X` and click `Command Prompt (Admin)`). Navigate to the temporary directory via the `cd <path>` command.
 
-5. Copy the file "Interception/library/x64/interception.dll" into the same directory, where the InterceptorCLI.exe is located (step 1)
+5. Execute the following command: `install-interception.exe /install`
 
-6. Restart your computer. If you want, you can now delete the unzipped directory and the Interception.zip
+6. Copy the file "Interception/library/x64/interception.dll" into the same directory, where the InterceptorCLI.exe is located (step 1)
+
+7. Restart your computer. If you want, you can now delete the unzipped directory and the Interception.zip
 
 You can find the installation instruction for Interceptor [here](https://github.com/jasonpang/Interceptor/blob/master/README.md). The installation instruction for the driver can be found [here](https://github.com/oblitum/Interception/blob/v1.0.1/README.md).
 
