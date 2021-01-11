@@ -123,6 +123,9 @@ namespace InterceptorCLI
                 this.input.KeyboardFilterMode = KeyboardFilterMode.All;
             }
 
+            this.input.MouseFilterMode = MouseFilterMode.All;
+            this.input.KeyboardFilterMode = KeyboardFilterMode.All;
+
             return res?CmdAction.TRUE:CmdAction.FALSE;
         }
 
