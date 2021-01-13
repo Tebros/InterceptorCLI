@@ -50,9 +50,12 @@ These are the available commands:
 | setkeypressdelay [delay] | Milliseconds between a key press and release |
 | setclickdelay [delay] | Milliseconds between a mouse press and release |
 | setscrolldelay [delay] | Milliseconds between the scroll steps |
+| sendmouse [mousestate] | Send the given mouse state |
 | sendleftclick | Click at the current position with the left mouse button |
 | sendrightclick | Click at the current position with the right mouse button |
-| sendkey [key] [keystate] | The program was successfully terminated. |
+| sendscroll [amount] | Scrolls amount times. Positive amount = down |
+| sendkey [key] [keystate] | Send the given key state for the given key |
+| sendkeystroke [key] | Press and release the given key |
 | movemouseto [x] [y] [useDriver] | Moves the mouse to the given point. `useDriver` indicates if the driver should be used for it. |
 | movemouseby [deltaX] [deltaY] [useDriver] | Moves the mouse, based on the current position. `useDriver` indicates if the driver should be used for it. |
 | isloaded | If Interceptor is loaded |

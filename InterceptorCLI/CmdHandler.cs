@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Interceptor;
 
@@ -24,9 +25,12 @@ namespace InterceptorCLI
             cmds["setkeypressdelay"] = HandleSetKeyPressDelay;
             cmds["setclickdelay"] = HandleSetClickDelay;
             cmds["setscrolldelay"] = HandleSetScrollDelay;
+            cmds["sendmouse"] = HandleSendMouse;
             cmds["sendleftclick"] = HandleSendLeftClick;
             cmds["sendrightclick"] = HandleSendRightClick;
+            cmds["sendscroll"] = HandleSendScroll;
             cmds["sendkey"] = HandleSendKey;
+            cmds["sendkeystroke"] = HandleSendKeystroke;
             cmds["movemouseto"] = HandleMoveMouseTo;
             cmds["movemouseby"] = HandleMoveMouseBy;
             cmds["isloaded"] = HandleIsLoaded;
@@ -180,6 +184,19 @@ namespace InterceptorCLI
             return CmdAction.OK;
         }
 
+        private CmdAction HandleSendMouse(string[] args)
+        {
+            if (!this.CheckArgsLength(args, 1)) return CmdAction.ERROR;
+
+            MouseState mouseState = (MouseState)Enum.Parse(typeof(MouseState), args[0], true);
+
+            this.input.SendMouseEvent(mouseState);
+
+            if (this.input.ClickDelay > 0) Thread.Sleep(this.input.ClickDelay);
+
+            return CmdAction.OK;
+        }
+
         private CmdAction HandleSendLeftClick(string[] args)
         {
             this.input.SendLeftClick();
@@ -194,6 +211,23 @@ namespace InterceptorCLI
             return CmdAction.OK;
         }
 
+        private CmdAction HandleSendScroll(string[] args)
+        {
+            if (!this.CheckArgsLength(args, 1)) return CmdAction.ERROR;
+
+            int amount = Convert.ToInt32(args[0]);
+            ScrollDirection direction = amount > 0 ? ScrollDirection.Down : ScrollDirection.Up;
+
+            for(int i=0; i<Math.Abs(amount); i++)
+            {
+                this.input.ScrollMouse(direction);
+
+                if(this.input.ScrollDelay>0) Thread.Sleep(this.input.ScrollDelay);
+            }
+
+            return CmdAction.OK;
+        }
+
         private CmdAction HandleSendKey(string[] args)
         {
             if (!this.CheckArgsLength(args, 2)) return CmdAction.ERROR;
@@ -202,6 +236,17 @@ namespace InterceptorCLI
             KeyState keyState = (KeyState)Enum.Parse(typeof(KeyState), args[1], true);
 
             this.input.SendKey(key, keyState);
+
+            return CmdAction.OK;
+        }
+
+        private CmdAction HandleSendKeystroke(string[] args)
+        {
+            if (!this.CheckArgsLength(args, 1)) return CmdAction.ERROR;
+
+            Keys key = (Keys)Enum.Parse(typeof(Keys), args[0], true);
+
+            this.input.SendKey(key);
 
             return CmdAction.OK;
         }
