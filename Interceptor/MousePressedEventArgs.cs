@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +7,7 @@ namespace Interceptor
 {
     public class MousePressedEventArgs : EventArgs
     {
+        public int DeviceId { get; set; }
         public MouseState State { get; set; }
         public bool Handled { get; set; }
         public int X { get; set; }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -40,10 +40,15 @@ namespace Interceptor
         public event EventHandler<KeyPressedEventArgs> OnKeyPressed;
         public event EventHandler<MousePressedEventArgs> OnMousePressed;
 
-        private int deviceId; /* Very important; which device the driver sends events to */
+        private Action<String> debug;
 
-        public Input()
+        private int keyboardDeviceId; /* Very important; which device the driver sends events to */
+        private int mouseDeviceId; /* Very important; which device the driver sends events to */
+
+        public Input(Action<String> debugFunction)
         {
+            this.debug = debugFunction;
+
             context = IntPtr.Zero;
 
             KeyboardFilterMode = KeyboardFilterMode.None;
@@ -52,6 +57,8 @@ namespace Interceptor
             KeyPressDelay = 1;
             ClickDelay = 1;
             ScrollDelay = 15;
+
+            mouseDeviceId = 12;
         }
 
         /*
@@ -104,13 +111,20 @@ namespace Interceptor
 
             Stroke stroke = new Stroke();
 
+            int deviceId = -1;
             while (InterceptionDriver.Receive(context, deviceId = InterceptionDriver.Wait(context), ref stroke, 1) > 0)
             {
                 if (InterceptionDriver.IsMouse(deviceId) > 0)
                 {
+                    if (deviceId != mouseDeviceId)
+                    {
+                        mouseDeviceId = deviceId;
+                        this.debug("Mouse device detected. Id updated to " + mouseDeviceId);
+                    }
+                    
                     if (OnMousePressed != null)
                     {
-                        var args = new MousePressedEventArgs() { X = stroke.Mouse.X, Y = stroke.Mouse.Y, State = stroke.Mouse.State, Rolling = stroke.Mouse.Rolling };
+                        var args = new MousePressedEventArgs() { DeviceId = deviceId, X = stroke.Mouse.X, Y = stroke.Mouse.Y, State = stroke.Mouse.State, Rolling = stroke.Mouse.Rolling };
                         OnMousePressed(this, args);
 
                         if (args.Handled)
@@ -126,9 +140,15 @@ namespace Interceptor
 
                 if (InterceptionDriver.IsKeyboard(deviceId) > 0)
                 {
+                    if (deviceId != keyboardDeviceId)
+                    {
+                        keyboardDeviceId = deviceId;
+                        this.debug("Keyboard device detected. Id updated to " + keyboardDeviceId);
+                    }
+
                     if (OnKeyPressed != null)
                     {
-                        var args = new KeyPressedEventArgs() { Key = stroke.Key.Code, State = stroke.Key.State};
+                        var args = new KeyPressedEventArgs() { DeviceId = deviceId, Key = stroke.Key.Code, State = stroke.Key.State};
                         OnKeyPressed(this, args);
 
                         if (args.Handled)
@@ -157,7 +177,9 @@ namespace Interceptor
 
             stroke.Key = keyStroke;
 
-            InterceptionDriver.Send(context, deviceId, ref stroke, 1);
+            InterceptionDriver.Send(context, keyboardDeviceId, ref stroke, 1);
+            this.debug("Send key " + key.ToString() + " " + state.ToString() + " for device id " + keyboardDeviceId);
+
 
             if (KeyPressDelay > 0)
                 Thread.Sleep(KeyPressDelay);
@@ -368,7 +390,8 @@ namespace Interceptor
 
             stroke.Mouse = mouseStroke;
 
-            InterceptionDriver.Send(context, 12, ref stroke, 1);
+            InterceptionDriver.Send(context, mouseDeviceId, ref stroke, 1);
+            this.debug("Send mouse state " + state.ToString() + " for device id " + mouseDeviceId);
         }
 
         public void SendLeftClick()
@@ -414,7 +437,8 @@ namespace Interceptor
                 stroke.Mouse = mouseStroke;
                 stroke.Mouse.Flags = MouseFlags.MoveRelative;
 
-                InterceptionDriver.Send(context, 12, ref stroke, 1);
+                InterceptionDriver.Send(context, mouseDeviceId, ref stroke, 1);
+                this.debug("Move mouse by " + deltaX + ", " + deltaY + " for device id " + mouseDeviceId);
             }
             else
             {
@@ -439,12 +463,13 @@ namespace Interceptor
                 stroke.Mouse = mouseStroke;
                 stroke.Mouse.Flags = MouseFlags.MoveAbsolute;
 
-                InterceptionDriver.Send(context, 12, ref stroke, 1);
+                InterceptionDriver.Send(context, mouseDeviceId, ref stroke, 1);
+                this.debug("Move mouse to " + x + ", " + y + " for device id " + mouseDeviceId);
             }
             {
                 Cursor.Position = new Point(x, y);
             }
         }
+
     }
 }
- 
