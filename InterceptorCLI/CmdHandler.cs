@@ -14,6 +14,7 @@ namespace InterceptorCLI
         private Dictionary<string, Func<string[], CmdAction>> cmds;
         private Input input;
         private bool debugInStdErr;
+        private bool keyPressedListenerEnabled;
 
         public CmdHandler()
         {
@@ -36,6 +37,9 @@ namespace InterceptorCLI
             cmds["sendkeystroke"] = HandleSendKeystroke;
             cmds["movemouseto"] = HandleMoveMouseTo;
             cmds["movemouseby"] = HandleMoveMouseBy;
+            cmds["startkeylistener"] = HandleStartKeyListener;
+            cmds["stopkeylistener"] = HandleStopKeyListener;
+            cmds["iskeylistening"] = HandleIsKeyListening;
             cmds["isloaded"] = HandleIsLoaded;
             cmds["unload"] = HandleUnload;
         }
@@ -349,6 +353,49 @@ namespace InterceptorCLI
             return CmdAction.OK;
         }
 
+        private CmdAction HandleStartKeyListener(string[] args)
+        {
+            this.debug("Command for 'HandleStartListener' detected.");
+
+            if (this.keyPressedListenerEnabled)
+            {
+                Console.Error.WriteLine("A key pressed handler is already active!");
+                return CmdAction.ERROR;
+            }
+
+            this.input.OnKeyPressed += keyPressedHandler;
+            this.keyPressedListenerEnabled = true;
+
+            this.debug("Key pressed handler added");
+
+            return CmdAction.OK;
+        }
+
+        private CmdAction HandleStopKeyListener(string[] args)
+        {
+            this.debug("Command for 'HandleStopKeyListener' detected.");
+
+            if (!this.keyPressedListenerEnabled)
+            {
+                Console.Error.WriteLine("No key pressed handler is enabled!");
+                return CmdAction.ERROR;
+            }
+
+            this.input.OnKeyPressed -= this.keyPressedHandler;
+            this.keyPressedListenerEnabled = false;
+
+            this.debug("Key pressed handler removed");
+
+            return CmdAction.OK;
+        }
+
+        private CmdAction HandleIsKeyListening(string[] args)
+        {
+            this.debug("Command for 'HandleIsKeyListening' detected.");
+
+            return this.keyPressedListenerEnabled ? CmdAction.TRUE : CmdAction.FALSE;
+        }
+
         private CmdAction HandleIsLoaded(string[] args)
         {
             this.debug("Command for 'HandleIsLoaded' detected.");
@@ -372,6 +419,11 @@ namespace InterceptorCLI
             {
                 Console.Error.WriteLine(msg);
             }
+        }
+
+        private void keyPressedHandler(object sender, KeyPressedEventArgs args)
+        {
+            Console.Error.WriteLine($"Key {args.State} on {args.DeviceId}: {args.Key}");
         }
     }
 }
